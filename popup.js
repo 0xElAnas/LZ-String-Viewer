@@ -1,3 +1,5 @@
+let editor; // Declare editor in a higher scope
+
 document.getElementById("decompressBtn").addEventListener("click", async () => {
   const key = document.getElementById("key").value;
   if (!key) {
@@ -87,6 +89,12 @@ function decompressLocalStorageValue(key) {
 
 function displayInJsonEditor(data) {
   const container = document.getElementById("jsoneditor");
+
+  // Remove existing editor if it exists
+  if (editor) {
+    editor.destroy();
+  }
+
   const options = {
     mode: "view", // Enable view mode
     modes: ["view", "form", "tree", "code", "text"], // Allow switching modes
@@ -101,7 +109,8 @@ function displayInJsonEditor(data) {
     },
   };
 
-  const editor = new JSONEditor(container, options);
+  // Create a new editor instance
+  editor = new JSONEditor(container, options);
   editor.set(data);
   document.getElementById("result").style.display = "none";
 }
