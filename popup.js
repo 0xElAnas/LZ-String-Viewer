@@ -1,55 +1,75 @@
 let editor; // Declare editor in a higher scope
+let storageType = "local"; // Default storage type
 
-document.getElementById("processBtn").addEventListener("click", async () => {
-  const key = document.getElementById("key").value;
-  if (!key) {
-    alert("Please enter a localStorage key.");
-    return;
+function populateDropdown(keys) {
+  const keySelect = document.getElementById("keySelect");
+  keySelect.innerHTML = '<option value="">Select a storage key</option>'; // Clear existing options
+
+  if (keys && keys.length > 0) {
+    keys.forEach((key) => {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = key;
+      keySelect.appendChild(option);
+    });
+  } else {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No keys found";
+    keySelect.appendChild(option);
   }
+}
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  // Inject lz-string.min.js into the current tab
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ["lz-string.min.js"],
-  });
-
-  // Inject and execute the decompression and formatting function
-  chrome.scripting.executeScript(
-    {
-      target: { tabId: tab.id },
-      func: decompressLocalStorageValue,
-      args: [key],
-    },
-    (results) => {
-      const result = results[0].result;
-      console.log("Process result:", result);
-      if (result) {
-        displayInJsonEditor(result);
-      } else {
-        displayErrorMessage("No data found or decompression failed.");
+function loadKeys() {
+  const tabId = chrome.devtools.inspectedWindow.tabId;
+  chrome.runtime.sendMessage(
+    { action: "getStorageKeys", storageType, tabId },
+    (response) => {
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError.message);
+        return;
       }
+      populateDropdown(response);
     }
   );
-});
-
-function decompressLocalStorageValue(key) {
-  const compressedData = localStorage.getItem(key);
-  console.log("Compressed data from localStorage:", compressedData);
-  if (compressedData) {
-    try {
-      const decompressedData = LZString.decompress(compressedData);
-      console.log("Decompressed data:", decompressedData);
-      return decompressedData ? JSON.parse(decompressedData) : null;
-    } catch (error) {
-      console.error("Decompression or parsing failed", error);
-      return null;
-    }
-  }
-  console.warn("No data found for key:", key);
-  return null;
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadKeys();
+
+  document.querySelectorAll('input[name="storageType"]').forEach((radio) => {
+    radio.addEventListener("change", function () {
+      storageType = this.value;
+      loadKeys();
+    });
+  });
+
+  document.getElementById("processBtn").addEventListener("click", () => {
+    const keySelect = document.getElementById("keySelect");
+    const key = keySelect.value;
+    if (!key) {
+      alert("Please select a storage key.");
+      return;
+    }
+
+    const tabId = chrome.devtools.inspectedWindow.tabId;
+    chrome.runtime.sendMessage(
+      { action: "decompressData", key, storageType, tabId },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+          return;
+        }
+        console.log("Decompressed response:", response); // Log the response
+        if (response) {
+          displayInJsonEditor(response);
+        } else {
+          displayErrorMessage("No data found or decompression failed.");
+        }
+      }
+    );
+  });
+});
 
 function displayInJsonEditor(data) {
   const container = document.getElementById("jsoneditor");
