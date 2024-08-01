@@ -1,40 +1,6 @@
 let editor; // Declare editor in a higher scope
 
-document.getElementById("decompressBtn").addEventListener("click", async () => {
-  const key = document.getElementById("key").value;
-  if (!key) {
-    alert("Please enter a localStorage key.");
-    return;
-  }
-
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  // Inject lz-string.min.js into the current tab
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    files: ["lz-string.min.js"],
-  });
-
-  // Inject and execute the decompression function
-  chrome.scripting.executeScript(
-    {
-      target: { tabId: tab.id },
-      func: decompressLocalStorageValue,
-      args: [key],
-    },
-    (results) => {
-      const result = results[0].result;
-      console.log("Decompression result:", result);
-      if (result) {
-        displayInJsonEditor(result);
-      } else {
-        displayErrorMessage("No data found or decompression failed.");
-      }
-    }
-  );
-});
-
-document.getElementById("formatJsonBtn").addEventListener("click", async () => {
+document.getElementById("processBtn").addEventListener("click", async () => {
   const key = document.getElementById("key").value;
   if (!key) {
     alert("Please enter a localStorage key.");
@@ -58,11 +24,11 @@ document.getElementById("formatJsonBtn").addEventListener("click", async () => {
     },
     (results) => {
       const result = results[0].result;
-      console.log("JSON format result:", result);
+      console.log("Process result:", result);
       if (result) {
         displayInJsonEditor(result);
       } else {
-        displayErrorMessage("No data found or invalid JSON format.");
+        displayErrorMessage("No data found or decompression failed.");
       }
     }
   );
