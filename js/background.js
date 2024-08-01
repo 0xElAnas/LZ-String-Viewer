@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     chrome.scripting.executeScript(
       {
         target: { tabId: tabId },
-        files: ["lz-string.min.js"],
+        files: ["js/lz-string.min.js"],
       },
       () => {
         chrome.scripting.executeScript(
