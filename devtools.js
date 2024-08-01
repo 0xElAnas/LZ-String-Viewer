@@ -1,6 +1,6 @@
 chrome.devtools.panels.create(
   "LZ-String Viewer",
-  "lzip128.png",
+  "img/logo.png",
   "popup.html",
   function (panel) {}
 );
