@@ -1,5 +1,5 @@
 chrome.devtools.panels.create(
-  "LZ Storage",
+  "LZ-String Viewer",
   "lzip128.png",
   "popup.html",
   function (panel) {}

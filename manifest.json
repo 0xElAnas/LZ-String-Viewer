@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "LZ-String LocalStorage Reader",
+  "name": "LZ-String Viewer",
   "version": "1.0",
-  "description": "Read and decompress localStorage data compressed with lz-string.",
+  "description": "Read and decompress localStorage and sessionStorage data compressed with lz-string.",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": {

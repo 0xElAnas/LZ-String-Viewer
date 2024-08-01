@@ -64,17 +64,21 @@ function getLocalStorageKeys(type) {
 
 function decompressStorageValue(key, type) {
   const storageEngine = type === "session" ? sessionStorage : localStorage;
-  const compressedData = storageEngine.getItem(key);
+  const data = storageEngine.getItem(key);
   console.log("Key:", key); // Log the key
-  console.log("Compressed data:", compressedData); // Log the compressed data
-  if (compressedData) {
+  console.log("Data:", data); // Log the data
+  if (data) {
     try {
-      const decompressedData = LZString.decompress(compressedData);
+      const decompressedData = LZString.decompress(data);
       console.log("Decompressed data:", decompressedData); // Log the decompressed data
-      return decompressedData ? JSON.parse(decompressedData) : null;
+      if (decompressedData) {
+        return { decompressed: JSON.parse(decompressedData), raw: null };
+      } else {
+        return { decompressed: null, raw: data };
+      }
     } catch (error) {
       console.error("Decompression or parsing failed", error);
-      return null;
+      return { decompressed: null, raw: data };
     }
   }
   return null;

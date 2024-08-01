@@ -3,27 +3,26 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>LZ-String LocalStorage Reader</title>
+    <title>LZ-String Viewer</title>
     <link href="jsoneditor.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
 </head>
 
 <body>
-    <h1>LZ-String LocalStorage Reader</h1>
-    <div>
-        <label>
-            <input type="radio" name="storageType" value="local" checked> localStorage
-        </label>
-        <label>
-            <input type="radio" name="storageType" value="session"> sessionStorage
-        </label>
+    <h1>LZ-String Viewer</h1>
+    <p id="description">View and decode data stored in local or session storage using LZ-String compression.</p>
+    <div class="control-row">
+        <select id="storageType">
+            <option value="local" selected>Local Storage</option>
+            <option value="session">Session Storage</option>
+        </select>
+        <select id="keySelect">
+            <option value="">Select a storage key</option>
+        </select>
+        <button id="processBtn">Process</button>
     </div>
-    <select id="keySelect">
-        <option value="">Select a storage key</option>
-    </select>
-    <button id="processBtn">Process</button>
     <h2>Result:</h2>
-    <p id="result">No result yet</p>
+    <p id="result">Please select a storage key and click "Process" to view the data.</p>
     <div id="jsoneditor"></div>
     <script src="jsoneditor.min.js"></script>
     <script src="lz-string.min.js"></script>

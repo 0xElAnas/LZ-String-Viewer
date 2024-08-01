@@ -3,7 +3,8 @@ let storageType = "local"; // Default storage type
 
 function populateDropdown(keys) {
   const keySelect = document.getElementById("keySelect");
-  keySelect.innerHTML = '<option value="">Select a storage key</option>'; // Clear existing options
+  keySelect.innerHTML =
+    '<option value="" disabled selected>Select a storage key</option>'; // Clear existing options
 
   if (keys && keys.length > 0) {
     keys.forEach((key) => {
@@ -37,12 +38,12 @@ function loadKeys() {
 document.addEventListener("DOMContentLoaded", () => {
   loadKeys();
 
-  document.querySelectorAll('input[name="storageType"]').forEach((radio) => {
-    radio.addEventListener("change", function () {
+  document
+    .getElementById("storageType")
+    .addEventListener("change", function () {
       storageType = this.value;
       loadKeys();
     });
-  });
 
   document.getElementById("processBtn").addEventListener("click", () => {
     const keySelect = document.getElementById("keySelect");
@@ -62,7 +63,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         console.log("Decompressed response:", response); // Log the response
         if (response) {
-          displayInJsonEditor(response);
+          if (response.decompressed) {
+            displayInJsonEditor(response.decompressed);
+          } else if (response.raw) {
+            const resultField = document.getElementById("result");
+            resultField.textContent = response.raw;
+            resultField.style.display = "block";
+
+            const container = document.getElementById("jsoneditor");
+            container.innerHTML = ""; // Clear the JSONEditor
+            container.style.display = "none";
+          }
         } else {
           displayErrorMessage("No data found or decompression failed.");
         }
@@ -73,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function displayInJsonEditor(data) {
   const container = document.getElementById("jsoneditor");
+  container.style.display = "block";
 
   // Remove existing editor if it exists
   if (editor) {
