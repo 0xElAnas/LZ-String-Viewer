@@ -28,8 +28,7 @@ document.getElementById("decompressBtn").addEventListener("click", async () => {
       if (result) {
         displayInJsonEditor(result);
       } else {
-        document.getElementById("result").textContent =
-          "No data found or decompression failed.";
+        displayErrorMessage("No data found or decompression failed.");
       }
     }
   );
@@ -63,8 +62,7 @@ document.getElementById("formatJsonBtn").addEventListener("click", async () => {
       if (result) {
         displayInJsonEditor(result);
       } else {
-        document.getElementById("result").textContent =
-          "No data found or invalid JSON format.";
+        displayErrorMessage("No data found or invalid JSON format.");
       }
     }
   );
@@ -113,4 +111,13 @@ function displayInJsonEditor(data) {
   editor = new JSONEditor(container, options);
   editor.set(data);
   document.getElementById("result").style.display = "none";
+}
+
+function displayErrorMessage(message) {
+  // Remove existing editor if it exists
+  if (editor) {
+    editor.destroy();
+  }
+  document.getElementById("result").textContent = message;
+  document.getElementById("result").style.display = "block";
 }
