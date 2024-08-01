@@ -23,9 +23,47 @@ document.getElementById("decompressBtn").addEventListener("click", async () => {
     (results) => {
       const result = results[0].result;
       console.log("Decompression result:", result);
-      document.getElementById("result").textContent = result
-        ? JSON.stringify(result, null, 2)
-        : "No data found or decompression failed.";
+      if (result) {
+        displayInJsonEditor(result);
+      } else {
+        document.getElementById("result").textContent =
+          "No data found or decompression failed.";
+      }
+    }
+  );
+});
+
+document.getElementById("formatJsonBtn").addEventListener("click", async () => {
+  const key = document.getElementById("key").value;
+  if (!key) {
+    alert("Please enter a localStorage key.");
+    return;
+  }
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  // Inject lz-string.min.js into the current tab
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["lz-string.min.js"],
+  });
+
+  // Inject and execute the decompression and formatting function
+  chrome.scripting.executeScript(
+    {
+      target: { tabId: tab.id },
+      func: decompressLocalStorageValue,
+      args: [key],
+    },
+    (results) => {
+      const result = results[0].result;
+      console.log("JSON format result:", result);
+      if (result) {
+        displayInJsonEditor(result);
+      } else {
+        document.getElementById("result").textContent =
+          "No data found or invalid JSON format.";
+      }
     }
   );
 });
@@ -45,4 +83,25 @@ function decompressLocalStorageValue(key) {
   }
   console.warn("No data found for key:", key);
   return null;
+}
+
+function displayInJsonEditor(data) {
+  const container = document.getElementById("jsoneditor");
+  const options = {
+    mode: "view", // Enable view mode
+    modes: ["view", "form", "tree", "code", "text"], // Allow switching modes
+    onError: function (err) {
+      console.error(err.toString());
+    },
+    onModeChange: function (newMode, oldMode) {
+      console.log("Mode switched from", oldMode, "to", newMode);
+    },
+    onChange: function () {
+      console.log("Data changed!");
+    },
+  };
+
+  const editor = new JSONEditor(container, options);
+  editor.set(data);
+  document.getElementById("result").style.display = "none";
 }
