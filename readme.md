@@ -21,12 +21,11 @@ A Chrome extension that reads and decompresses data stored in `localStorage` and
 
 ## Usage
 
-1. Click on the extension icon in the toolbar.
-2. Follow the instructions to open the Chrome DevTools.
-3. Navigate to the "LZ-String Viewer" tab in the DevTools.
-4. Select the storage type (`localStorage` or `sessionStorage`).
-5. Choose a storage key from the dropdown menu.
-6. Click "Process" to view the data. If the data is compressed, it will be decompressed and displayed using JSONEditor. If the data is uncompressed, it will be displayed as-is.
+1. Open the Chrome DevTools.
+2. Navigate to the "LZ-String Viewer" tab in the DevTools.
+3. Select the storage type (`localStorage` or `sessionStorage`).
+4. Choose a storage key from the dropdown menu.
+5. Click "Process" to view the data. If the data is compressed, it will be decompressed and displayed using JSONEditor. If the data is uncompressed, it will be displayed as-is.
 
 ## Contributing
 
