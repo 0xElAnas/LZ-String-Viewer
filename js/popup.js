@@ -1,6 +1,19 @@
 let editor; // Declare editor in a higher scope
 let storageType = "local"; // Default storage type
 
+// Add this function to calculate human-readable file sizes
+function humanFileSize(size) {
+  if (size > 0) {
+    var i = Math.floor(Math.log(size) / Math.log(1024));
+    return (
+      (size / Math.pow(1024, i)).toFixed(2) * 1 +
+      ["B", "KB", "MB", "GB", "TB"][i]
+    );
+  } else {
+    return "0 Bytes";
+  }
+}
+
 function populateDropdown(keys) {
   const keySelect = document.getElementById("keySelect");
   keySelect.innerHTML =
@@ -61,9 +74,30 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error(chrome.runtime.lastError.message);
           return;
         }
-        console.log("Decompressed response:", response); // Log the response
         if (response) {
+          const fileSizeElement = document.getElementById("fileSize");
+          const originalSizeElement = document.getElementById("originalSize");
+          const compressedSizeElement =
+            document.getElementById("compressedSize");
+          let dataSize;
+          let compressedSize;
+
+          if (response.raw) {
+            dataSize = response.raw.length;
+            compressedSize = LZString.compress(response.raw).length;
+          } else {
+            const decompressedData = JSON.stringify(response.decompressed);
+            dataSize = decompressedData.length;
+            compressedSize = LZString.compress(decompressedData).length;
+          }
+
+          originalSizeElement.textContent = `${humanFileSize(dataSize)}`;
+          compressedSizeElement.textContent = `${humanFileSize(
+            compressedSize
+          )}`;
+
           if (response.decompressed) {
+            fileSizeElement.style.display = "block";
             displayInJsonEditor(response.decompressed);
           } else if (response.raw) {
             const resultField = document.getElementById("result");
@@ -73,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const container = document.getElementById("jsoneditor");
             container.innerHTML = ""; // Clear the JSONEditor
             container.style.display = "none";
+            fileSizeElement.style.display = "none";
           }
         } else {
           displayErrorMessage("No data found or decompression failed.");
@@ -96,12 +131,6 @@ function displayInJsonEditor(data) {
     modes: ["view", "form", "tree", "code", "text"], // Allow switching modes
     onError: function (err) {
       console.error(err.toString());
-    },
-    onModeChange: function (newMode, oldMode) {
-      console.log("Mode switched from", oldMode, "to", newMode);
-    },
-    onChange: function () {
-      console.log("Data changed!");
     },
   };
 
