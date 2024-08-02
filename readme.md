@@ -1,4 +1,4 @@
-# Compressed Storage Inspector
+# LZ String Viewer
 
 A Chrome extension that reads and decompresses data stored in `localStorage` and `sessionStorage` using the LZ-String library. This tool helps developers view and inspect compressed data directly within the Chrome DevTools.
 
