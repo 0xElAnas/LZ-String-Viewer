@@ -1,10 +1,19 @@
 let editor; // Declare editor in a higher scope
 let storageType = "local"; // Default storage type
 
+// Debounce function to prevent multiple rapid calls
+function debounce(func, wait) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
 // Add this function to calculate human-readable file sizes
 function humanFileSize(size) {
   if (size > 0) {
-    var i = Math.floor(Math.log(size) / Math.log(1024));
+    const i = Math.floor(Math.log(size) / Math.log(1024));
     return (
       (size / Math.pow(1024, i)).toFixed(2) * 1 +
       ["B", "KB", "MB", "GB", "TB"][i]
@@ -51,12 +60,13 @@ function loadKeys() {
 document.addEventListener("DOMContentLoaded", () => {
   loadKeys();
 
-  document
-    .getElementById("storageType")
-    .addEventListener("change", function () {
+  document.getElementById("storageType").addEventListener(
+    "change",
+    debounce(function () {
       storageType = this.value;
       loadKeys();
-    });
+    }, 300)
+  );
 
   document.getElementById("processBtn").addEventListener("click", () => {
     const keySelect = document.getElementById("keySelect");
@@ -75,40 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         if (response) {
-          const fileSizeElement = document.getElementById("fileSize");
-          const originalSizeElement = document.getElementById("originalSize");
-          const compressedSizeElement =
-            document.getElementById("compressedSize");
-          let dataSize;
-          let compressedSize;
-
-          if (response.raw) {
-            dataSize = response.raw.length;
-            compressedSize = LZString.compress(response.raw).length;
-          } else {
-            const decompressedData = JSON.stringify(response.decompressed);
-            dataSize = decompressedData.length;
-            compressedSize = LZString.compress(decompressedData).length;
-          }
-
-          originalSizeElement.textContent = `${humanFileSize(dataSize)}`;
-          compressedSizeElement.textContent = `${humanFileSize(
-            compressedSize
-          )}`;
-
-          if (response.decompressed) {
-            fileSizeElement.style.display = "block";
-            displayInJsonEditor(response.decompressed);
-          } else if (response.raw) {
-            const resultField = document.getElementById("result");
-            resultField.textContent = response.raw;
-            resultField.style.display = "block";
-
-            const container = document.getElementById("jsoneditor");
-            container.innerHTML = ""; // Clear the JSONEditor
-            container.style.display = "none";
-            fileSizeElement.style.display = "none";
-          }
+          displayResults(response);
         } else {
           displayErrorMessage("No data found or decompression failed.");
         }
@@ -116,6 +93,40 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 });
+
+function displayResults(response) {
+  const fileSizeElement = document.getElementById("fileSize");
+  const originalSizeElement = document.getElementById("originalSize");
+  const compressedSizeElement = document.getElementById("compressedSize");
+  let dataSize;
+  let compressedSize;
+
+  if (response.raw) {
+    dataSize = response.raw.length;
+    compressedSize = LZString.compress(response.raw).length;
+  } else {
+    const decompressedData = JSON.stringify(response.decompressed);
+    dataSize = decompressedData.length;
+    compressedSize = LZString.compress(decompressedData).length;
+  }
+
+  originalSizeElement.textContent = `${humanFileSize(dataSize)}`;
+  compressedSizeElement.textContent = `${humanFileSize(compressedSize)}`;
+
+  if (response.decompressed) {
+    fileSizeElement.style.display = "block";
+    displayInJsonEditor(response.decompressed);
+  } else if (response.raw) {
+    const resultField = document.getElementById("result");
+    resultField.textContent = response.raw;
+    resultField.style.display = "block";
+
+    const container = document.getElementById("jsoneditor");
+    container.innerHTML = ""; // Clear the JSONEditor
+    container.style.display = "none";
+    fileSizeElement.style.display = "none";
+  }
+}
 
 function displayInJsonEditor(data) {
   const container = document.getElementById("jsoneditor");
@@ -127,7 +138,7 @@ function displayInJsonEditor(data) {
   }
 
   const options = {
-    mode: "view", // Enable view mode
+    mode: "view", // Enable view mode as default
     modes: ["view", "form", "tree", "code", "text"], // Allow switching modes
     onError: function (err) {
       console.error(err.toString());
